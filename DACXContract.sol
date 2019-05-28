@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma solidity 0.5.8;
 
 library SafeMath {
 
@@ -43,7 +43,7 @@ library SafeMath {
 }
 
 contract Ownable {
-  address public owner;
+  address payable public owner;
 
 
   event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
@@ -69,7 +69,7 @@ contract Ownable {
    * @dev Allows the current owner to transfer control of the contract to a newOwner.
    * @param newOwner The address to transfer ownership to.
    */
-  function transferOwnership(address newOwner) public onlyOwner {
+  function transferOwnership(address payable newOwner) public onlyOwner {
     require(newOwner != address(0));
     emit OwnershipTransferred(owner, newOwner);
     owner = newOwner;
@@ -89,13 +89,13 @@ contract BasicToken is ERC20Basic {
 
   mapping(address => uint256) balances;
 
-  uint256 totalSupply_;
+  uint256 totalTokenSupply;
 
   /**
   * @dev total number of tokens in existence
   */
   function totalSupply() public view returns (uint256) {
-    return totalSupply_;
+    return totalTokenSupply;
   }
 
   /**
@@ -119,7 +119,7 @@ contract BasicToken is ERC20Basic {
   * @param _owner The address to query the the balance of.
   * @return An uint256 representing the amount owned by the passed address.
   */
-  function balanceOf(address _owner) public view returns (uint256 addrbalance) {
+  function balanceOf(address _owner) public view returns (uint256) {
     return balances[_owner];
   }
 
@@ -134,14 +134,12 @@ contract BurnableToken is BasicToken {
    * @param _value The amount of token to be burned.
    * @param _reason The reason why tokens are burned.
    */
-  function burn(uint256 _value, string _reason) public {
+  function burn(uint256 _value, string memory _reason) public {
     require(_value <= balances[msg.sender]);
-    // no need to require value <= totalSupply, since that would imply the
-    // sender's balance is greater than the totalSupply, which *should* be an assertion failure
-
+	   
     address burner = msg.sender;
     balances[burner] = balances[burner].sub(_value);
-    totalSupply_ = totalSupply_.sub(_value);
+    totalTokenSupply = totalTokenSupply.sub(_value);
     emit Burn(burner, _value, _reason);
   }
 }
@@ -155,7 +153,7 @@ contract ERC20 is ERC20Basic {
 
 contract StandardToken is ERC20, BasicToken {
 
-  mapping (address => mapping (address => uint256)) internal allowed;
+  mapping (address => mapping (address => uint256)) allowed;
 
 
   /**
@@ -165,6 +163,7 @@ contract StandardToken is ERC20, BasicToken {
    * @param _value uint256 the amount of tokens to be transferred
    */
   function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
+    require(_from != address(0));
     require(_to != address(0));
     require(_value <= balances[_from]);
     require(_value <= allowed[_from][msg.sender]);
@@ -187,7 +186,9 @@ contract StandardToken is ERC20, BasicToken {
    * @param _value The amount of tokens to be spent.
    */
   function approve(address _spender, uint256 _value) public returns (bool) {
-    allowed[msg.sender][_spender] = _value;
+    require(_spender != address(0));
+
+	allowed[msg.sender][_spender] = _value;
     emit Approval(msg.sender, _spender, _value);
     return true;
   }
@@ -213,6 +214,8 @@ contract StandardToken is ERC20, BasicToken {
    * @param _addedValue The amount of tokens to increase the allowance by.
    */
   function increaseApproval(address _spender, uint _addedValue) public returns (bool) {
+    require(_spender != address(0));
+
     allowed[msg.sender][_spender] = allowed[msg.sender][_spender].add(_addedValue);
     emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
     return true;
@@ -230,6 +233,8 @@ contract StandardToken is ERC20, BasicToken {
    */
   function decreaseApproval(address _spender, uint _subtractedValue) public returns (bool) {
     uint oldValue = allowed[msg.sender][_spender];
+    
+    //Reseting allowed amount when the _subtractedValue is greater than allowed is on purpose
     if (_subtractedValue > oldValue) {
       allowed[msg.sender][_spender] = 0;
     } else {
@@ -241,14 +246,13 @@ contract StandardToken is ERC20, BasicToken {
 
 }
 
-contract DACXTokenT3 is StandardToken, BurnableToken, Ownable {
+contract DACXToken is StandardToken, BurnableToken, Ownable {
     using SafeMath for uint;
 
-    string constant public symbol = "DACXT3";
-    string constant public name = "DACX Token Test3";
+    string constant public symbol = "DACX";
+    string constant public name = "DACX Token";
 
     uint8 constant public decimals = 18;
-    uint256 INITIAL_SUPPLY = 786786786e18;
 
     // First date regular transfers are allowed
     uint constant firstTransferTime = 1551441600; // Friday, March 1, 2019 12:00:00 AM UTC
@@ -260,20 +264,24 @@ contract DACXTokenT3 is StandardToken, BurnableToken, Ownable {
     
     // Company Wallet: Will be used to collect fees, all Company Side Burning will commence using this wallet
     address company = 0x536f64882873443573a7F4638f08A8bc3F9202fe;
-    // Angel Wallet: Initial distribution to Angel Investors will be made through this wallet 
+    
+	// Angel Wallet: Initial distribution to Angel Investors will be made through this wallet 
     address angel = 0xD086AD2279B81f84CB56801891C231058a650e71;
-    // Team Wallet: Initial distribution to Team Members will be made through this wallet 
+    
+	// Team Wallet: Initial distribution to Team Members will be made through this wallet 
     address team = 0x13dD90A3C51f85b87A77858765C281746157adAE;
+
     // Locked Wallet: All remaining team funds will be locked for at least 1 year
-    // After first year, a fraction of locked funds will be distributed to Team Members each year
     address locked = 0x433e08EDf0DD86975A8a7a7a155a4eA58C8426Cc;
 
     // Crowdsale Wallet: All token sales (Private/Pre/Public) will be made through this wallet
     address crowdsale = 0x56390F548cc97FDf187AA2C0bD14c87364C58faD;
-    // Bounty Wallet: Holds the tokens reserved for our initial and future bounty campaigns
+    
+	// Bounty Wallet: Holds the tokens reserved for our initial and future bounty campaigns
     address bounty = 0xF4Ab971ff1ba5CB68006181560f93a586e37Db5c;
 
 
+    // INITIAL_TOTAL_SUPPLY = 786786786e18;
     uint constant lockedTokens     = 1966966964e17; // 196,696,696.40
     uint constant angelTokens      =  393393393e17; //  39,339,339.30
     uint constant teamTokens       = 1180180180e17; // 118,018,018.00
@@ -283,23 +291,24 @@ contract DACXTokenT3 is StandardToken, BurnableToken, Ownable {
 
     constructor () public {
 
-        totalSupply_ = INITIAL_SUPPLY;
+        totalTokenSupply = 0;
 
         // InitialDistribution
-        preSale(locked, lockedTokens);
-        preSale(angel, angelTokens);
-        preSale(team, teamTokens);
-        preSale(crowdsale, crowdsaleTokens);
-        preSale(bounty, bountyTokens);
+        setInitialTokens(locked, lockedTokens);
+        setInitialTokens(angel, angelTokens);
+        setInitialTokens(team, teamTokens);
+        setInitialTokens(crowdsale, crowdsaleTokens);
+        setInitialTokens(bounty, bountyTokens);
 
     }
 
-    function preSale(address _address, uint _amount) internal {
+    function setInitialTokens(address _address, uint _amount) internal {
+        totalTokenSupply = totalTokenSupply.add(_amount);
         balances[_address] = _amount;
         emit Transfer(address(0x0), _address, _amount);
     }
 
-    function checkPermissions(address _from) internal constant returns (bool) {
+    function checkPermissions(address _from) internal view returns (bool) {
 
         if (_from == locked && now < unlockTime) {
             return false;
@@ -331,7 +340,8 @@ contract DACXTokenT3 is StandardToken, BurnableToken, Ownable {
         return ret;
     }
 
-    function () public payable {
+    function () external payable {
+	    require(msg.data.length == 0);
         require(msg.value >= 1e16);
         owner.transfer(msg.value);
     }
