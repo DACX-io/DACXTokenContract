@@ -254,31 +254,28 @@ contract DACXToken is StandardToken, BurnableToken, Ownable {
 
     uint8 constant public decimals = 18;
 
-    // First date regular transfers are allowed
-    uint constant firstTransferTime = 1551441600; // Friday, March 1, 2019 12:00:00 AM UTC
-    
     // First date locked team token transfers are allowed
-    uint constant unlockTime = 1583064000; // Sunday, March 1, 2020 12:00:00 AM UTC
+    uint constant unlockTime = 1593561600; // Wednesday, July 1, 2020 12:00:00 AM UTC
 
     // Below listed are the Master Wallets to be used, for complete transparency purposes
     
     // Company Wallet: Will be used to collect fees, all Company Side Burning will commence using this wallet
     address company = 0x536f64882873443573a7F4638f08A8bc3F9202fe;
     
-	// Angel Wallet: Initial distribution to Angel Investors will be made through this wallet 
+    // Angel Wallet: Initial distribution to Angel Investors will be made through this wallet 
     address angel = 0xD086AD2279B81f84CB56801891C231058a650e71;
     
-	// Team Wallet: Initial distribution to Team Members will be made through this wallet 
-    address team = 0x13dD90A3C51f85b87A77858765C281746157adAE;
+    // Team Wallet: Initial distribution to Team Members will be made through this wallet 
+    address team = 0xd3544D8569EFc16cAA1EF22D77B37d3fe98CA617;
 
     // Locked Wallet: All remaining team funds will be locked for at least 1 year
-    address locked = 0x433e08EDf0DD86975A8a7a7a155a4eA58C8426Cc;
+    address locked = 0x612D44Aea422093aEB56049eDb53a213a3F4689F;
 
     // Crowdsale Wallet: All token sales (Private/Pre/Public) will be made through this wallet
-    address crowdsale = 0x56390F548cc97FDf187AA2C0bD14c87364C58faD;
+    address crowdsale = 0x939276d1dA91B9327a3BA4E896Fb624C97Eedf4E;
     
-	// Bounty Wallet: Holds the tokens reserved for our initial and future bounty campaigns
-    address bounty = 0xF4Ab971ff1ba5CB68006181560f93a586e37Db5c;
+    // Bounty Wallet: Holds the tokens reserved for our initial and future bounty campaigns
+    address bounty = 0x40e70bD19b1b1d792E4f850ea78691Ccd42B84Ea;
 
 
     // INITIAL_TOTAL_SUPPLY = 786786786e18;
@@ -311,14 +308,6 @@ contract DACXToken is StandardToken, BurnableToken, Ownable {
     function checkPermissions(address _from) internal view returns (bool) {
 
         if (_from == locked && now < unlockTime) {
-            return false;
-        }
-
-        if (_from == bounty || _from == crowdsale || _from == angel || _from == team) {
-            return true;
-        }
-
-        if (now < firstTransferTime) {
             return false;
         } else {
             return true;
