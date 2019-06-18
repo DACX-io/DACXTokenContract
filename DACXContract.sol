@@ -260,10 +260,10 @@ contract DACXToken is StandardToken, BurnableToken, Ownable {
     // Below listed are the Master Wallets to be used, for complete transparency purposes
     
     // Company Wallet: Will be used to collect fees, all Company Side Burning will commence using this wallet
-    address company = 0x536f64882873443573a7F4638f08A8bc3F9202fe;
+    address company = 0x12Fc4aD0532Ef06006C6b85be4D377dD1287a991;
     
     // Angel Wallet: Initial distribution to Angel Investors will be made through this wallet 
-    address angel = 0xD086AD2279B81f84CB56801891C231058a650e71;
+    address angel = 0xfd961aDDEb5198B2a7d9DEfabC405f2FBa38E88b;
     
     // Team Wallet: Initial distribution to Team Members will be made through this wallet 
     address team = 0xd3544D8569EFc16cAA1EF22D77B37d3fe98CA617;
